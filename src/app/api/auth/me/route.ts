@@ -34,7 +34,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const user = await dataLayer.getUserById(payload.userId);
+    let user = await dataLayer.getUserById(payload.userId);
+    if (!user) {
+      user = await dataLayer.getUserByEmail(payload.email);
+    }
+
+    if (!user && payload.email) {
+      user = await dataLayer.createUser({
+        name: payload.name || "Patron",
+        email: payload.email,
+        passwordHash: null,
+        provider: payload.provider || "credentials",
+        role: payload.role || "customer",
+        tier: payload.tier || "Connoisseur",
+        avatarUrl: payload.avatarUrl || null,
+        phone: payload.phone || null,
+        streetAddress: payload.streetAddress || null,
+        city: payload.city || null,
+        state: payload.state || null,
+        postalCode: payload.postalCode || null,
+        country: payload.country || "India",
+      });
+    }
+
     if (!user) {
       return NextResponse.json(
         { authenticated: false, user: null, message: "User account not found" },

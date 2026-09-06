@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import {
   SafeUser,
   signInWithCredentialsAction,
@@ -28,21 +29,44 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SafeUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const pathname = usePathname();
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     try {
+      // Primary: Call server action
       const res = await getCurrentUserAction();
-      setUser(res.user);
+      if (res?.user) {
+        setUser(res.user);
+        return;
+      }
+
+      // Secondary fallback: Query /api/auth/me REST endpoint
+      const meRes = await fetch("/api/auth/me", { cache: "no-store" });
+      const meData = await meRes.json();
+      if (meData?.authenticated && meData.user) {
+        setUser(meData.user);
+        return;
+      }
+
+      setUser(null);
     } catch {
       setUser(null);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
+  // Re-sync user session whenever the route/pathname changes
   useEffect(() => {
     refreshUser();
-  }, []);
+  }, [pathname, refreshUser]);
+
+  // Re-sync session when tab/window regains focus
+  useEffect(() => {
+    const handleFocus = () => refreshUser();
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [refreshUser]);
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);

@@ -50,6 +50,14 @@ export interface SessionPayload {
   name: string;
   role: string;
   tier: string;
+  provider?: string;
+  avatarUrl?: string | null;
+  phone?: string | null;
+  streetAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
   exp: number; // Unix timestamp in ms
 }
 
@@ -62,6 +70,14 @@ export function createSessionToken(user: {
   name: string;
   role: string;
   tier: string;
+  provider?: string;
+  avatarUrl?: string | null;
+  phone?: string | null;
+  streetAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
 }): string {
   const payload: SessionPayload = {
     userId: user.id,
@@ -69,6 +85,14 @@ export function createSessionToken(user: {
     name: user.name,
     role: user.role,
     tier: user.tier,
+    provider: user.provider || "credentials",
+    avatarUrl: user.avatarUrl ?? null,
+    phone: user.phone ?? null,
+    streetAddress: user.streetAddress ?? null,
+    city: user.city ?? null,
+    state: user.state ?? null,
+    postalCode: user.postalCode ?? null,
+    country: user.country ?? "India",
     exp: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days validity
   };
 
@@ -119,7 +143,10 @@ export function verifySessionToken(token: string): SessionPayload | null {
  */
 export const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
+  secure:
+    process.env.NODE_ENV === "production" &&
+    !process.env.NEXT_PUBLIC_APP_URL?.includes("localhost") &&
+    !process.env.NEXT_PUBLIC_APP_URL?.includes("127.0.0.1"),
   sameSite: "lax" as const,
   path: "/",
   maxAge: 7 * 24 * 60 * 60, // 7 days in seconds

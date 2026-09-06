@@ -252,7 +252,12 @@ class MockDatabaseRepository {
   }
 }
 
-const mockRepo = new MockDatabaseRepository();
+const globalForDb = globalThis as unknown as {
+  mockRepo?: MockDatabaseRepository;
+};
+
+const mockRepo = globalForDb.mockRepo || new MockDatabaseRepository();
+globalForDb.mockRepo = mockRepo;
 
 const connectionString = process.env.DATABASE_URL;
 export const isLiveDatabase = Boolean(connectionString && connectionString.startsWith("postgres"));

@@ -195,7 +195,30 @@ export async function getCurrentUserAction(): Promise<{ user: SafeUser | null }>
     const payload = verifySessionToken(token);
     if (!payload) return { user: null };
 
-    const user = await dataLayer.getUserById(payload.userId);
+    let user = await dataLayer.getUserById(payload.userId);
+    if (!user) {
+      user = await dataLayer.getUserByEmail(payload.email);
+    }
+
+    if (!user && payload.email) {
+      // Re-provision verified user in dataLayer from the cryptographically signed session token
+      user = await dataLayer.createUser({
+        name: payload.name || "Patron",
+        email: payload.email,
+        passwordHash: null,
+        provider: payload.provider || "credentials",
+        role: payload.role || "customer",
+        tier: payload.tier || "Connoisseur",
+        avatarUrl: payload.avatarUrl || null,
+        phone: payload.phone || null,
+        streetAddress: payload.streetAddress || null,
+        city: payload.city || null,
+        state: payload.state || null,
+        postalCode: payload.postalCode || null,
+        country: payload.country || "India",
+      });
+    }
+
     if (!user) return { user: null };
 
     return { user: sanitizeUser(user) };
