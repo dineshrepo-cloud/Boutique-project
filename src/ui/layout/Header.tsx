@@ -220,6 +220,13 @@ export function BoutiqueHeader() {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem
+                    onClick={() => router.push("/profile")}
+                    className="flex items-center gap-2 text-xs py-1.5 px-2.5 cursor-pointer font-medium"
+                  >
+                    <UserIcon className="h-3.5 w-3.5 text-brand-600" aria-hidden="true" />
+                    <span>My Profile & Details</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     onClick={() => router.push("/checkout")}
                     className="flex items-center gap-2 text-xs py-1.5 px-2.5 cursor-pointer"
                   >

@@ -49,6 +49,12 @@ export const users = pgTable("users", {
   provider: text("provider").default("credentials").notNull(), // 'credentials' | 'google'
   role: text("role").default("customer").notNull(), // 'customer' | 'vip' | 'admin'
   tier: text("tier").default("Connoisseur").notNull(), // 'Connoisseur' | 'Vault VIP' | 'Geneva Circle'
+  phone: text("phone"),
+  streetAddress: text("street_address"),
+  city: text("city"),
+  state: text("state"),
+  postalCode: text("postal_code"),
+  country: text("country").default("India"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -19,6 +19,12 @@ export interface SafeUser {
   provider: string;
   role: string;
   tier: string;
+  phone: string | null;
+  streetAddress: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
+  country: string | null;
   createdAt: string;
 }
 
@@ -31,6 +37,12 @@ function sanitizeUser(user: User): SafeUser {
     provider: user.provider,
     role: user.role,
     tier: user.tier,
+    phone: user.phone,
+    streetAddress: user.streetAddress,
+    city: user.city,
+    state: user.state,
+    postalCode: user.postalCode,
+    country: user.country,
     createdAt: user.createdAt.toISOString(),
   };
 }
@@ -221,5 +233,75 @@ export async function getCurrentUserAction(): Promise<{ user: SafeUser | null }>
     return { user: sanitizeUser(user) };
   } catch {
     return { user: null };
+  }
+}
+
+export interface UpdateProfileInput {
+  name?: string;
+  phone?: string | null;
+  streetAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  avatarUrl?: string | null;
+}
+
+/**
+ * Update authenticated user's profile and delivery details
+ */
+export async function updateUserProfileAction(data: UpdateProfileInput): Promise<{
+  success: boolean;
+  user?: SafeUser;
+  error?: string;
+}> {
+  try {
+    const cookieStore = await cookies();
+    const token =
+      cookieStore.get(SESSION_COOKIE_NAME)?.value ||
+      cookieStore.get("maison_session")?.value;
+    if (!token) {
+      return { success: false, error: "You must be signed in to update your profile." };
+    }
+
+    const payload = verifySessionToken(token);
+    if (!payload) {
+      return { success: false, error: "Session has expired. Please sign in again." };
+    }
+
+    const existingUser = await dataLayer.getUserById(payload.userId);
+    if (!existingUser) {
+      return { success: false, error: "User account not found." };
+    }
+
+    // Sanitize updates
+    const updateData: Partial<User> = {};
+    if (data.name && data.name.trim().length >= 2) {
+      updateData.name = data.name.trim();
+    }
+    if (data.phone !== undefined) updateData.phone = data.phone?.trim() || null;
+    if (data.streetAddress !== undefined) updateData.streetAddress = data.streetAddress?.trim() || null;
+    if (data.city !== undefined) updateData.city = data.city?.trim() || null;
+    if (data.state !== undefined) updateData.state = data.state?.trim() || null;
+    if (data.postalCode !== undefined) updateData.postalCode = data.postalCode?.trim() || null;
+    if (data.country !== undefined) updateData.country = data.country?.trim() || "India";
+    if (data.avatarUrl !== undefined) updateData.avatarUrl = data.avatarUrl?.trim() || null;
+
+    const updatedUser = await dataLayer.updateUser(existingUser.id, updateData);
+
+    // If name changed, re-issue cryptographic session token with updated name
+    if (updateData.name) {
+      const newToken = createSessionToken(updatedUser);
+      cookieStore.set(SESSION_COOKIE_NAME, newToken, SESSION_COOKIE_OPTIONS);
+    }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/profile");
+    revalidatePath("/checkout");
+
+    return { success: true, user: sanitizeUser(updatedUser) };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to update profile.";
+    return { success: false, error: message };
   }
 }

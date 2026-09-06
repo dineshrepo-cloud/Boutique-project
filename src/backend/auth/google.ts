@@ -57,6 +57,7 @@ export function sanitizeReturnUrl(url?: string | null): string {
 export function getGoogleOAuthConfig(requestHeaders?: {
   host?: string | null;
   proto?: string | null;
+  pathname?: string | null;
 }) {
   const clientId = (
     authProperties.google.clientId ||
@@ -67,6 +68,12 @@ export function getGoogleOAuthConfig(requestHeaders?: {
   const clientSecret = (
     authProperties.google.clientSecret ||
     process.env.GOOGLE_CLIENT_SECRET ||
+    ""
+  ).trim();
+
+  const customRedirectUri = (
+    authProperties.google.redirectUri ||
+    process.env.GOOGLE_REDIRECT_URI ||
     ""
   ).trim();
 
@@ -96,7 +103,8 @@ export function getGoogleOAuthConfig(requestHeaders?: {
     baseUrl = "http://localhost:3000";
   }
 
-  const redirectUri = `${baseUrl}/api/auth/google/callback`;
+  const redirectPath = requestHeaders?.pathname || "/api/auth/google/callback";
+  const redirectUri = customRedirectUri || `${baseUrl}${redirectPath}`;
 
   return {
     clientId,

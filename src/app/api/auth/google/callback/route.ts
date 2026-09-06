@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   const host = request.headers.get("host");
   const proto = request.headers.get("x-forwarded-proto");
-  const config = getGoogleOAuthConfig({ host, proto });
+  const config = getGoogleOAuthConfig({ host, proto, pathname: request.nextUrl.pathname });
 
   const errorRedirect = (errorReason: string) => {
     const loginUrl = new URL("/login", request.nextUrl.origin);

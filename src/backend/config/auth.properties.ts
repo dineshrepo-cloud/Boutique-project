@@ -11,6 +11,7 @@
 export interface GoogleOAuthProperties {
   clientId: string;
   clientSecret: string;
+  redirectUri?: string;
   scopes: string[];
 }
 
@@ -36,6 +37,7 @@ export const authProperties: AuthProperties = {
     // ---------------------------------------------------------------------------
     clientId: process.env.GOOGLE_CLIENT_ID || "",
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    redirectUri: process.env.GOOGLE_REDIRECT_URI || "",
     scopes: ["openid", "email", "profile"],
   },
   session: {

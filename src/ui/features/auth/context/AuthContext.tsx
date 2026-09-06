@@ -8,6 +8,8 @@ import {
   signInWithGoogleAction,
   signOutAction,
   getCurrentUserAction,
+  updateUserProfileAction,
+  UpdateProfileInput,
 } from "@/backend/actions/auth.actions";
 
 interface AuthContextType {
@@ -18,6 +20,7 @@ interface AuthContextType {
   signInWithGoogle: (profile?: { name?: string; email?: string; avatarUrl?: string }) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateProfile: (data: UpdateProfileInput) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -93,6 +96,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (data: UpdateProfileInput) => {
+    setIsLoading(true);
+    try {
+      const res = await updateUserProfileAction(data);
+      if (res.success && res.user) {
+        setUser(res.user);
+        return { success: true };
+      }
+      return { success: false, error: res.error || "Failed to update profile." };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -103,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signInWithGoogle,
         signOut,
         refreshUser,
+        updateProfile,
       }}
     >
       {children}

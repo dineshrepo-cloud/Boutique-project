@@ -60,13 +60,13 @@ export default function BoutiqueCheckoutPage() {
 
   // Billing form state
   const [billing, setBilling] = useState<CustomerBillingDetails>({
-    fullName: user ? user.name : "Elena Rostova",
-    email: user ? user.email : "elena.rostova@yukatrendz.com",
-    phone: "+41 22 819 21 00",
-    addressLine1: "Rue du Rhône 42",
-    city: "Genève",
-    postalCode: "1204",
-    country: "Switzerland",
+    fullName: user ? user.name : "Lord Harrison Vance",
+    email: user ? user.email : "patron@yukatrendz.com",
+    phone: user?.phone || "+91 98200 12345",
+    addressLine1: user?.streetAddress || "Penthouse 42, Altamount Road",
+    city: user?.city || "Mumbai",
+    postalCode: user?.postalCode || "400026",
+    country: user?.country || "India",
     specialInstructions: "Deliver directly to private salon concierge.",
   });
 
@@ -76,6 +76,11 @@ export default function BoutiqueCheckoutPage() {
         ...prev,
         fullName: user.name,
         email: user.email,
+        phone: user.phone || prev.phone,
+        addressLine1: user.streetAddress || prev.addressLine1,
+        city: user.city || prev.city,
+        postalCode: user.postalCode || prev.postalCode,
+        country: user.country || prev.country,
       }));
     }
   }, [user]);
