@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/ui/primitives/select";
-import { createProductAction } from "../actions";
+import { createProductAction } from "@/backend/actions/inventory.actions";
 import { Category } from "@/backend/db/schema";
 
 export function AddProductDialog({ categories }: { categories: Category[] }) {

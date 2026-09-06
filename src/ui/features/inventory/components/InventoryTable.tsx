@@ -16,7 +16,7 @@ import { Button } from "@/ui/primitives/button";
 import { Input } from "@/ui/primitives/input";
 import { Alert, AlertDescription } from "@/ui/primitives/alert";
 import { formatCurrency } from "@/lib/utils";
-import { updateStockAction, deleteProductAction } from "../actions";
+import { updateStockAction, deleteProductAction } from "@/backend/actions/inventory.actions";
 import { EditProductDialog } from "./EditProductDialog";
 import {
   Check,

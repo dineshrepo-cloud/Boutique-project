@@ -37,7 +37,7 @@ import {
   SelectValue,
 } from "@/ui/primitives/select";
 import { Product, Category } from "@/backend/db/schema";
-import { updateProductAction } from "../actions";
+import { updateProductAction } from "@/backend/actions/inventory.actions";
 import { formatCurrency } from "@/lib/utils";
 
 interface EditProductDialogProps {
