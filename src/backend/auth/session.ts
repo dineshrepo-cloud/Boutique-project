@@ -1,7 +1,11 @@
 import crypto from "crypto";
+import { authProperties } from "@/backend/config/auth.properties";
 
-export const SESSION_SECRET = process.env.SESSION_SECRET || "yuka-trendz-cryptographic-vault-key-2026";
-export const SESSION_COOKIE_NAME = "yuka_session";
+export const SESSION_SECRET =
+  authProperties.session.secret ||
+  process.env.SESSION_SECRET ||
+  "yuka-trendz-cryptographic-vault-key-2026";
+export const SESSION_COOKIE_NAME = authProperties.session.cookieName || "yuka_session";
 
 export interface SessionPayload {
   userId: number;

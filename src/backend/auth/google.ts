@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { authProperties } from "@/backend/config/auth.properties";
 import { SESSION_SECRET } from "./session";
 
 export const OAUTH_STATE_COOKIE = "oauth_state";
@@ -57,11 +58,30 @@ export function getGoogleOAuthConfig(requestHeaders?: {
   host?: string | null;
   proto?: string | null;
 }) {
-  const clientId = (process.env.GOOGLE_CLIENT_ID || "").trim();
-  const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || "").trim();
-  const isConfigured = Boolean(clientId && clientSecret);
+  const clientId = (
+    authProperties.google.clientId ||
+    process.env.GOOGLE_CLIENT_ID ||
+    ""
+  ).trim();
 
-  let baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "").trim().replace(/\/$/, "");
+  const clientSecret = (
+    authProperties.google.clientSecret ||
+    process.env.GOOGLE_CLIENT_SECRET ||
+    ""
+  ).trim();
+
+  const isConfigured = Boolean(
+    clientId &&
+    clientSecret &&
+    !clientId.includes("PASTE_") &&
+    !clientSecret.includes("PASTE_")
+  );
+
+  let baseUrl = (
+    authProperties.app.baseUrl ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    ""
+  ).trim().replace(/\/$/, "");
 
   if (!baseUrl && requestHeaders?.host) {
     const proto =
@@ -168,7 +188,7 @@ export function getGoogleAuthorizationUrl(options: {
   url.searchParams.set("client_id", options.clientId);
   url.searchParams.set("redirect_uri", options.redirectUri);
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "openid email profile");
+  url.searchParams.set("scope", authProperties.google.scopes.join(" ") || "openid email profile");
   url.searchParams.set("state", options.state);
   url.searchParams.set("access_type", "offline");
   url.searchParams.set("prompt", "select_account");
