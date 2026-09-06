@@ -9,43 +9,11 @@ import {
   verifySessionToken,
   SESSION_COOKIE_NAME,
   SESSION_COOKIE_OPTIONS,
+  SafeUser,
+  sanitizeUser,
 } from "@/backend/auth/session";
 
-export interface SafeUser {
-  id: number;
-  name: string;
-  email: string;
-  avatarUrl: string | null;
-  provider: string;
-  role: string;
-  tier: string;
-  phone: string | null;
-  streetAddress: string | null;
-  city: string | null;
-  state: string | null;
-  postalCode: string | null;
-  country: string | null;
-  createdAt: string;
-}
-
-function sanitizeUser(user: User): SafeUser {
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    avatarUrl: user.avatarUrl,
-    provider: user.provider,
-    role: user.role,
-    tier: user.tier,
-    phone: user.phone,
-    streetAddress: user.streetAddress,
-    city: user.city,
-    state: user.state,
-    postalCode: user.postalCode,
-    country: user.country,
-    createdAt: user.createdAt.toISOString(),
-  };
-}
+export type { SafeUser };
 
 /**
  * Basic Auth: Sign in with Email and Password

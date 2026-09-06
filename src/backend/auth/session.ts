@@ -1,11 +1,48 @@
 import crypto from "crypto";
 import { authProperties } from "@/backend/config/auth.properties";
+import { User } from "@/backend/db/schema";
 
 export const SESSION_SECRET =
   authProperties.session.secret ||
   process.env.SESSION_SECRET ||
   "yuka-trendz-cryptographic-vault-key-2026";
 export const SESSION_COOKIE_NAME = authProperties.session.cookieName || "yuka_session";
+
+export interface SafeUser {
+  id: number;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  provider: string;
+  role: string;
+  tier: string;
+  phone: string | null;
+  streetAddress: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
+  country: string | null;
+  createdAt: string;
+}
+
+export function sanitizeUser(user: User): SafeUser {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatarUrl: user.avatarUrl,
+    provider: user.provider,
+    role: user.role,
+    tier: user.tier,
+    phone: user.phone,
+    streetAddress: user.streetAddress,
+    city: user.city,
+    state: user.state,
+    postalCode: user.postalCode,
+    country: user.country,
+    createdAt: user.createdAt.toISOString(),
+  };
+}
 
 export interface SessionPayload {
   userId: number;
