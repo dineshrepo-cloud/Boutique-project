@@ -103,6 +103,16 @@ class MockDatabaseRepository {
     return newUser;
   }
 
+  async updateUser(id: number, data: Partial<schema.User>): Promise<schema.User> {
+    const idx = this.users.findIndex((u) => u.id === id);
+    if (idx === -1) throw new Error("User not found");
+    this.users[idx] = {
+      ...this.users[idx],
+      ...data,
+    };
+    return this.users[idx];
+  }
+
   async getCategories(): Promise<schema.Category[]> {
     return [...this.categories];
   }
@@ -395,5 +405,21 @@ export const dataLayer = {
       }
     }
     return mockRepo.createUser(user);
+  },
+
+  updateUser: async (id: number, data: Partial<schema.User>) => {
+    if (db) {
+      try {
+        const res = await db
+          .update(schema.users)
+          .set(data)
+          .where(eq(schema.users.id, id))
+          .returning();
+        if (res[0]) return res[0];
+      } catch (err) {
+        console.warn("Neon DB user update failed:", err);
+      }
+    }
+    return mockRepo.updateUser(id, data);
   },
 };

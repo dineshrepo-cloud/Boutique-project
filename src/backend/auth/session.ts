@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-const SESSION_SECRET = process.env.SESSION_SECRET || "yuka-trendz-cryptographic-vault-key-2026";
+export const SESSION_SECRET = process.env.SESSION_SECRET || "yuka-trendz-cryptographic-vault-key-2026";
 export const SESSION_COOKIE_NAME = "yuka_session";
 
 export interface SessionPayload {

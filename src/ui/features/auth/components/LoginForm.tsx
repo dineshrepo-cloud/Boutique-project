@@ -70,6 +70,36 @@ export function LoginForm() {
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
 
+  // Check for OAuth error parameters from redirect callback
+  const oauthErrorParam = searchParams.get("error");
+
+  React.useEffect(() => {
+    if (!oauthErrorParam) return;
+
+    switch (oauthErrorParam) {
+      case "google_config_missing":
+        setErrorMsg(
+          "Google OAuth credentials (GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET) are not set in .env.local yet. You can sign in using our 1-click Demo Google Profile below or configure Google Cloud credentials."
+        );
+        break;
+      case "google_access_denied":
+        setErrorMsg("Google sign-in was cancelled by the user.");
+        break;
+      case "invalid_state":
+        setErrorMsg("OAuth security verification failed or session expired. Please try again.");
+        break;
+      case "oauth_token_failed":
+        setErrorMsg("Failed to exchange authentication token with Google. Please verify credentials.");
+        break;
+      case "oauth_userinfo_failed":
+        setErrorMsg("Failed to retrieve user profile from Google. Please try again.");
+        break;
+      default:
+        setErrorMsg("Google authentication encountered an issue. Please try again.");
+        break;
+    }
+  }, [oauthErrorParam]);
+
   // Handle Basic Auth Sign In
   const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,8 +146,17 @@ export function LoginForm() {
     }
   };
 
-  // Handle Google Sign-In
-  const handleGoogleSignIn = async () => {
+  // Handle Production Google OAuth 2.0 Flow
+  const handleGoogleSignIn = () => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setIsSubmitting(true);
+    // Redirect top-level browser to OAuth initiation endpoint
+    window.location.href = `/api/auth/google?redirect=${encodeURIComponent(redirectUrl)}`;
+  };
+
+  // Instant fallback for testing demo Google profile without Google Cloud credentials
+  const handleDemoGoogleSignIn = async () => {
     setErrorMsg(null);
     setSuccessMsg(null);
     setIsSubmitting(true);
@@ -125,7 +164,7 @@ export function LoginForm() {
     try {
       const res = await signInWithGoogle();
       if (res.success) {
-        setSuccessMsg("Google account authenticated. Connecting to vault...");
+        setSuccessMsg("Demo Google account authenticated. Connecting to vault...");
         setTimeout(() => {
           router.push(redirectUrl);
           router.refresh();
@@ -234,6 +273,19 @@ export function LoginForm() {
             <GoogleIcon />
             <span>Continue with Google</span>
           </Button>
+
+          {oauthErrorParam === "google_config_missing" && (
+            <Button
+              type="button"
+              variant="tertiary-gray"
+              className="w-full h-9 text-xs border border-dashed border-brand-500/40 bg-brand-500/5 hover:bg-brand-500/10 text-brand-700 dark:text-brand-300 font-medium gap-2"
+              onClick={handleDemoGoogleSignIn}
+              disabled={isSubmitting}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-brand-600 shrink-0" />
+              <span>Sign In with Demo Google Profile (1-Click)</span>
+            </Button>
+          )}
 
           {/* Clean Untitled UI Divider */}
           <div className="relative flex items-center justify-center py-1">
