@@ -2,9 +2,62 @@
 
 import { revalidatePath } from "next/cache";
 import { dataLayer } from "@/backend/db";
-import { NewProduct, Product } from "@/backend/db/schema";
+import { NewProduct, Product, NewCategory, Category } from "@/backend/db/schema";
 import { slugify } from "@/lib/utils";
 import { getCurrentUserAction } from "@/backend/actions/auth.actions";
+
+/**
+ * Create a new customized category in the store catalog (Administrator clearance required)
+ */
+export async function createCategoryAction(data: {
+  name: string;
+  slug?: string;
+  description?: string;
+  image?: string;
+}) {
+  try {
+    await requireAdmin();
+
+    const trimmedName = data.name?.trim();
+    if (!trimmedName) {
+      return { success: false, error: "Category name is required." };
+    }
+
+    const baseSlug = data.slug?.trim() ? slugify(data.slug.trim()) : slugify(trimmedName);
+    if (!baseSlug) {
+      return { success: false, error: "Invalid category slug generated from name." };
+    }
+
+    // Check if category with this slug already exists
+    const existing = await dataLayer.getCategoryBySlug(baseSlug);
+    if (existing) {
+      return {
+        success: false,
+        error: `A category with slug "${baseSlug}" already exists. Please choose a distinct name or slug.`,
+      };
+    }
+
+    const newCategoryData: NewCategory = {
+      name: trimmedName,
+      slug: baseSlug,
+      description: data.description?.trim() || null,
+      image:
+        data.image?.trim() ||
+        "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=900&auto=format&fit=crop",
+    };
+
+    const created = await dataLayer.createCategory(newCategoryData);
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/inventory");
+    revalidatePath("/products");
+    revalidatePath("/");
+
+    return { success: true, category: created };
+  } catch (error: unknown) {
+    return { success: false, error: getErrorMessage(error) };
+  }
+}
 
 /**
  * Ensures the caller is authenticated and possesses 'admin' privileges.

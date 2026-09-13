@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -24,11 +24,13 @@ import {
 } from "@/ui/primitives/select";
 import { createProductAction } from "@/backend/actions/inventory.actions";
 import { Category } from "@/backend/db/schema";
+import { AddCategoryDialog } from "./AddCategoryDialog";
 
 export function AddProductDialog({ categories }: { categories: Category[] }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  const [catList, setCatList] = useState<Category[]>(categories);
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
   const [description, setDescription] = useState("");
@@ -38,6 +40,13 @@ export function AddProductDialog({ categories }: { categories: Category[] }) {
   const [categorySlug, setCategorySlug] = useState(categories[0]?.slug || "timepieces");
   const [image, setImage] = useState("");
   const [featured, setFeatured] = useState(false);
+
+  useEffect(() => {
+    setCatList(categories);
+    if (!categorySlug && categories.length > 0) {
+      setCategorySlug(categories[0].slug);
+    }
+  }, [categories, categorySlug]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,14 +160,34 @@ export function AddProductDialog({ categories }: { categories: Category[] }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Category *</Label>
+            <div className="flex items-center justify-between">
+              <Label>Category *</Label>
+              <AddCategoryDialog
+                onCategoryCreated={(newCat) => {
+                  setCatList((prev) => {
+                    const exists = prev.some((c) => c.slug === newCat.slug);
+                    return exists ? prev : [...prev, newCat];
+                  });
+                  setCategorySlug(newCat.slug);
+                }}
+                trigger={
+                  <button
+                    type="button"
+                    className="text-[11px] font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 cursor-pointer flex items-center gap-1 hover:underline"
+                  >
+                    <Plus className="h-3 w-3" />
+                    New Category
+                  </button>
+                }
+              />
+            </div>
             <Select value={categorySlug} onValueChange={setCategorySlug}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.slug}>
+                {catList.map((c) => (
+                  <SelectItem key={c.id || c.slug} value={c.slug}>
                     {c.name}
                   </SelectItem>
                 ))}

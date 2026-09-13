@@ -145,6 +145,24 @@ class MockDatabaseRepository {
     return this.categories.find((c) => c.slug === slug) || null;
   }
 
+  async createCategory(data: schema.NewCategory): Promise<schema.Category> {
+    const existing = this.categories.find((c) => c.slug === data.slug);
+    if (existing) {
+      throw new Error(`Category with slug '${data.slug}' already exists.`);
+    }
+    const newId = this.categories.length ? Math.max(...this.categories.map((c) => c.id)) + 1 : 1;
+    const newCategory: schema.Category = {
+      id: newId,
+      name: data.name,
+      slug: data.slug,
+      description: data.description ?? null,
+      image: data.image ?? null,
+      createdAt: new Date(),
+    };
+    this.categories.push(newCategory);
+    return newCategory;
+  }
+
   async getProducts(filter?: {
     categorySlug?: string;
     featured?: boolean;
@@ -287,6 +305,33 @@ export const dataLayer = {
       }
     }
     return mockRepo.getCategories();
+  },
+
+  getCategoryBySlug: async (slug: string) => {
+    if (db) {
+      try {
+        const rows = await db
+          .select()
+          .from(schema.categories)
+          .where(eq(schema.categories.slug, slug));
+        return rows[0] ?? null;
+      } catch (err) {
+        console.warn("Neon DB get category by slug failed:", err);
+      }
+    }
+    return mockRepo.getCategoryBySlug(slug);
+  },
+
+  createCategory: async (category: schema.NewCategory) => {
+    if (db) {
+      try {
+        const res = await db.insert(schema.categories).values(category).returning();
+        if (res[0]) return res[0];
+      } catch (err) {
+        console.warn("Neon DB category insert failed:", err);
+      }
+    }
+    return mockRepo.createCategory(category);
   },
 
   getProducts: async (filter?: {

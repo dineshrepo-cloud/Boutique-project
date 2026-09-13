@@ -4,6 +4,7 @@ import { getCurrentUserAction } from "@/backend/actions/auth.actions";
 import { formatCurrency } from "@/lib/utils";
 import { InventoryTable } from "@/ui/features/inventory/components/InventoryTable";
 import { AddProductDialog } from "@/ui/features/inventory/components/AddProductDialog";
+import { AddCategoryDialog } from "@/ui/features/inventory/components/AddCategoryDialog";
 import { AdminAccessDenied } from "@/ui/features/inventory/components/AdminAccessDenied";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/primitives/card";
 import { Badge } from "@/ui/primitives/badge";
@@ -77,7 +78,8 @@ export default async function BoutiqueAdminVaultPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <AddCategoryDialog />
           <AddProductDialog categories={categories} />
         </div>
       </div>
