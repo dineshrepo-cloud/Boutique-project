@@ -261,7 +261,7 @@ export default function CartPage() {
           {/* Delivery Assurance */}
           <div className="p-4 rounded-xl border border-border/60 bg-card/60 text-xs space-y-1.5">
             <span className="font-semibold text-foreground block">
-              Free Delivery Benefits
+              Free Delivery Benefit
             </span>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               Orders over ₹2,000 receive complimentary express insured courier delivery.
